@@ -11,6 +11,7 @@ public:
     static constexpr int kGridLen = 9;
     static constexpr int kNumOptions = 10;
     static constexpr int kGridSize = kGridLen * kGridLen;
+    static constexpr U32 kFilterMoveMask = 0b1111111110;
 
 private:
     static int kGridToRowTable[kGridSize];
@@ -40,6 +41,7 @@ public:
     bool Solve();
 
 private:
+    void DumbFill();
     void Deduce();
     bool DFS();
     U32 GetMove(int grid);
