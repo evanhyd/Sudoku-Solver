@@ -1,25 +1,51 @@
 #include <iostream>
+#include <fstream>
 #include "Sudoku.h"
 
 int main()
 {
     Sudoku::InitTable();
 
-    Sudoku game =
+    std::ifstream input_file("sudoku_unsolved.csv");
+    if (!input_file)
     {
-        "8....4..12.3.6..9.4.6..8.52.8.5.9........15....23....8...8..4....9..5..........6."
-    };
+        std::cout << "Unable to read sudoku_unsolved.csv\n";
+        return EXIT_FAILURE;
+    }
 
-    Sudoku answer =
+    std::ofstream output_file("sudoku_solved.csv");
+    if (!output_file)
     {
-        "897254631253167894416938752681529347934781526572346918365812479149675283728493165"
-    };
+        std::cout << "Unable to create sudoku_solved.csv\n";
+        return EXIT_FAILURE;
+    }
 
-    std::cout << game << '\n';
-    std::cout << answer << '\n';
 
-    if (game.Solve()) std::cout << "Solved\n";
-    else std::cout << "Error, failed to solve\n";
+    for(int counter = 0; ; ++counter)
+    {
+        std::cout << "Test case #" << counter << '\n';
 
-    std::cout << game << '\n';
+        std::string puzzle_str;
+        std::getline(input_file, puzzle_str);
+
+        if (puzzle_str.empty()) break;
+        puzzle_str.pop_back();
+
+        Sudoku game(puzzle_str);
+
+        if (game.Solve())
+        {
+            std::cout << "completed\n";
+            output_file << game;
+        }
+        else
+        {
+            std::cout << game << '\n';
+            std::cerr << "\aError, failed to solve\n";
+            break;
+        }
+    }
+
+    input_file.close();
+    output_file.close();
 }

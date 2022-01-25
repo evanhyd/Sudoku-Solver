@@ -59,38 +59,15 @@ Sudoku::Sudoku(const std::string& new_board) : Sudoku()
 
 bool Sudoku::Solve()
 {
-    std::cout << "Stage 1:\n";
-    this->DumbFill();
+    std::cout << "Deducing...\n";
+    this->Deduce();
+
+    if (empty_grid_ == 0) return true;
+
+    std::cout << "\aBrute Force DFS...\n";
     std::cout << *this << '\n';
 
-    //std::cout << "Stage 2:\n";
-    //this->Deduce();
-    //std::cout << *this << '\n';
-
-    std::cout << "Stage 3:\n";
-    return this->DFS();
-}
-
-void Sudoku::DumbFill()
-{
-    while (true)
-    {
-        bool updated = false;
-
-        for (int i = 0; i < kGridSize; ++i)
-        {
-            if (board_[i] != kEmptyGrid) continue;
-            U32 this_grid_moves = this->GetMove(i);
-            if (std::popcount(this_grid_moves) == 1)
-            {
-                int move = GetLSTBit(this_grid_moves);
-                PutNum(i, move);
-                updated = true;
-            }
-        }
-
-        if (!updated) break;
-    }
+    return this->DFS(0);
 }
 
 void Sudoku::Deduce()
@@ -102,30 +79,46 @@ void Sudoku::Deduce()
         for (int i = 0; i < kGridSize; ++i)
         {
             if (board_[i] != kEmptyGrid) continue;
-            U32 this_grid_moves = this->GetMove(i);
+            const U32 moves = this->GetMove(i);
 
-            std::cout << i << " has moves: ";
+
+            /*std::cout << i << " has moves: ";
             U32 cpy = this_grid_moves;
             while (cpy)
             {
                 std::cout << GetLSTBit(cpy) << ' ';
                 cpy = PopBit(cpy);
             }
-            std::cout << '\n';
+            std::cout << '\n';*/
+
+
+
+            //check direct moves
+            U32 direct_moves = moves;
+            if (std::popcount(direct_moves) == 1)
+            {
+                int num = GetLSTBit(direct_moves);
+                this->PutNum(i, num);
+                updated = true;
+                continue;
+            }
+
 
             //check same row
-            U32 other_grid_moves = 0;
-            for (int row = kGridToRowTable[i], column = 0, grid = row * kGridLen + column; column < kGridLen; ++column, ++grid)
+            U32 row_moves = moves;
+            for (int row = kGridToRowTable[i], column = 0; column < kGridLen; ++column)
             {
+                int grid = row * kGridLen + column;
+
                 //skip filled && same grid
                 if (board_[grid] != kEmptyGrid || grid == i) continue;
 
-                other_grid_moves |= GetMove(grid);
+                row_moves &= ~GetMove(grid);
             }
-            other_grid_moves = this_grid_moves & ~other_grid_moves & kFilterMoveMask;
-            if (std::popcount(other_grid_moves) == 1)
+            row_moves &= kFilterMoveMask;
+            if (std::popcount(row_moves) == 1)
             {
-                int num = GetLSTBit(other_grid_moves);
+                int num = GetLSTBit(row_moves);
                 this->PutNum(i, num);
                 updated = true;
                 continue;
@@ -133,38 +126,42 @@ void Sudoku::Deduce()
 
 
             //check same column
-            other_grid_moves = 0;
-            for (int row = 0, column = kGridToColumnTable[i], grid = row * kGridLen + column; row < kGridLen; ++row, ++grid)
+            U32 column_moves = moves;
+            for (int row = 0, column = kGridToColumnTable[i]; row < kGridLen; ++row)
             {
+                int grid = row * kGridLen + column;
+
                 //skip filled && same grid
                 if (board_[grid] != kEmptyGrid || grid == i) continue;
 
-                other_grid_moves |= GetMove(grid);
+                column_moves &= ~GetMove(grid);
             }
-            other_grid_moves = this_grid_moves & ~other_grid_moves & kFilterMoveMask;
-            if (std::popcount(other_grid_moves) == 1)
+            column_moves &= kFilterMoveMask;
+            if (std::popcount(column_moves) == 1)
             {
-                int num = GetLSTBit(other_grid_moves);
+                int num = GetLSTBit(column_moves);
                 this->PutNum(i, num);
                 updated = true;
                 continue;
             }
 
 
+
+
             //check same block
-            other_grid_moves = 0;
+            U32 block_moves = moves;
             for (int offset = 0; offset < kGridLen; ++offset)
             {
                 //skip filled && same grid
                 int grid = kBlockRangeTable[kGridToBlockTable[i]][offset];
                 if (board_[grid] != kEmptyGrid || grid == i) continue;
 
-                other_grid_moves |= GetMove(grid);
+                block_moves &= ~GetMove(grid);
             }
-            other_grid_moves = this_grid_moves & ~other_grid_moves & kFilterMoveMask;
-            if (std::popcount(other_grid_moves) == 1)
+            block_moves &= kFilterMoveMask;
+            if (std::popcount(block_moves) == 1)
             {
-                int num = GetLSTBit(other_grid_moves);
+                int num = GetLSTBit(block_moves);
                 this->PutNum(i, num);
                 updated = true;
                 continue;
@@ -177,8 +174,9 @@ void Sudoku::Deduce()
     }
 }
 
+int no_moves = 0;
 
-bool Sudoku::DFS()
+bool Sudoku::DFS(int depth)
 {
     if (empty_grid_ == 0) return true;
 
@@ -188,12 +186,19 @@ bool Sudoku::DFS()
 
         U32 moves = GetMove(i);
 
+        //no moves available!
+        if (moves == 0)
+        {
+            //std::clog << "cut off: "<<++no_moves <<" at " <<depth<< '\n';
+            return false;
+        }
+
         while (moves)
         {
             int num = GetLSTBit(moves);
 
             PutNum(i, num);
-            if (this->DFS()) return true;
+            if (this->DFS(depth + 1)) return true;
             UndoPutNum(i);
 
             moves = PopBit(moves);
@@ -257,6 +262,17 @@ std::ostream& operator<<(std::ostream& output, const Sudoku& game)
     output << "  -----------------------\n";
 
     output << "Empty grid remains: " << game.empty_grid_ << '\n';
+
+    return output;
+}
+std::ofstream& operator<<(std::ofstream& output, const Sudoku& game)
+{
+    for (int i = 0; i < Sudoku::kGridSize; ++i)
+    {
+        if (game.board_[i]) output << game.board_[i];
+        else output << '.';
+    }
+    output << '\n';
 
     return output;
 }

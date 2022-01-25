@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <array>
 #include <string>
 
@@ -41,13 +42,13 @@ public:
     bool Solve();
 
 private:
-    void DumbFill();
     void Deduce();
-    bool DFS();
+    bool DFS(int depth);
     U32 GetMove(int grid);
     void PutNum(int grid, int num);
     void UndoPutNum(int grid);
 
     friend std::ostream& operator<<(std::ostream& output, const Sudoku& game);
+    friend std::ofstream& operator<<(std::ofstream& output, const Sudoku& game);
 };
 
