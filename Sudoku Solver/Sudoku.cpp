@@ -53,19 +53,19 @@ Sudoku::Sudoku(const std::string& new_board) : Sudoku()
     assert(new_board.size() == kGridSize);
     for (int i = 0; i < kGridSize; ++i)
     {
-        if(isdigit(new_board[i])) this->PutNum(i, new_board[i] - '0');
+        if(isdigit(new_board[i]) && new_board[i] != 0) this->PutNum(i, new_board[i] - '0');
     }
 }
 
 bool Sudoku::Solve()
 {
-    std::cout << "Deducing...\n";
+    /*std::cout << "Deducing...\n";
     this->Deduce();
 
-    if (empty_grid_ == 0) return true;
+    if (empty_grid_ == 0) return true;*/
 
-    std::cout << "\aBrute Force DFS...\n";
-    std::cout << *this << '\n';
+    //std::cout << "Brute Force DFS...\n";
+    //std::cout << *this << '\n';
 
     return this->DFS(0);
 }
@@ -80,18 +80,6 @@ void Sudoku::Deduce()
         {
             if (board_[i] != kEmptyGrid) continue;
             const U32 moves = this->GetMove(i);
-
-
-            /*std::cout << i << " has moves: ";
-            U32 cpy = this_grid_moves;
-            while (cpy)
-            {
-                std::cout << GetLSTBit(cpy) << ' ';
-                cpy = PopBit(cpy);
-            }
-            std::cout << '\n';*/
-
-
 
             //check direct moves
             U32 direct_moves = moves;
@@ -174,11 +162,13 @@ void Sudoku::Deduce()
     }
 }
 
-int no_moves = 0;
-
 bool Sudoku::DFS(int depth)
 {
     if (empty_grid_ == 0) return true;
+
+    int best_grid = 0;
+    U32 best_moves = 0;
+    int best_move_options = 10;
 
     for (int i = 0; i < kGridSize; ++i)
     {
@@ -187,22 +177,28 @@ bool Sudoku::DFS(int depth)
         U32 moves = GetMove(i);
 
         //no moves available!
-        if (moves == 0)
+        if (moves == 0) return false;
+
+        int curr_move_options = std::popcount(moves);
+        if (curr_move_options < best_move_options)
         {
-            //std::clog << "cut off: "<<++no_moves <<" at " <<depth<< '\n';
-            return false;
+            best_grid = i;
+            best_moves = moves;
+            best_move_options = curr_move_options;
         }
+    }
 
-        while (moves)
-        {
-            int num = GetLSTBit(moves);
 
-            PutNum(i, num);
-            if (this->DFS(depth + 1)) return true;
-            UndoPutNum(i);
+    //choosing the grid with least options makes it extremely fast!!!
+    while (best_moves)
+    {
+        int num = GetLSTBit(best_moves);
 
-            moves = PopBit(moves);
-        }
+        PutNum(best_grid, num);
+        if (this->DFS(depth + 1)) return true;
+        UndoPutNum(best_grid);
+
+        best_moves = PopBit(best_moves);
     }
 
     return false;
