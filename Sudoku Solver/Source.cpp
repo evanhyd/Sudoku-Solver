@@ -4,8 +4,6 @@
 
 int main()
 {
-    Sudoku::InitTable();
-
     std::ifstream input_file("sudoku_unsolved.csv");
     if (!input_file)
     {
@@ -36,6 +34,7 @@ int main()
         if (game.Solve())
         {
             std::cout << "completed\n";
+            std::cout << game << '\n';
             output_file << game;
         }
         else
