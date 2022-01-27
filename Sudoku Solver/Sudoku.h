@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-#include <array>
 #include <string>
 
 class Sudoku
@@ -27,6 +26,19 @@ private:
         {6, 6, 6, 7, 7, 7, 8, 8, 8}
     };
 
+    static constexpr int kCompletedPuzzle[kGridLen][kGridLen] =
+    {
+       {1, 2, 3, 4, 5, 6, 7, 8, 9},
+       {4, 5, 6, 7, 8, 9, 1, 2, 3},
+       {7, 8, 9, 1, 2, 3, 4, 5, 6},
+       {2, 3, 1, 6, 7, 4, 8, 9, 5},
+       {8, 7, 5, 9, 1, 2, 3, 6, 4},
+       {6, 9, 4, 5, 3, 8, 2, 1, 7},
+       {3, 1, 7, 2, 6, 5, 9, 4, 8},
+       {5, 4, 2, 8, 9, 7, 6, 3, 1},
+       {9, 6, 8, 3, 4, 1, 5, 7, 2}
+    };
+
     static U32 PopBit(U32 num);
     static U32 FlipBit(U32 num, int bit);
     static int GetLSTBit(U32 num);
@@ -40,15 +52,20 @@ private:
 
 public:
     Sudoku();
-    Sudoku(const std::string& new_board);
+    explicit Sudoku(int clue);
+    explicit Sudoku(const std::string& new_board);
 
     bool Solve();
+    void Shuffle(int clue);
 
 private:
-    bool DFS(int depth);
     U32 GetMove(int i, int j);
     void PutNum(int i, int j, int num);
     void UndoPutNum(int i, int j);
+    bool DFS(int depth);
+    bool IsSolvable();
+
+    void ReduceClue(int clue);
 
     friend std::ostream& operator<<(std::ostream& output, const Sudoku& game);
     friend std::ofstream& operator<<(std::ofstream& output, const Sudoku& game);

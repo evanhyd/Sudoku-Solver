@@ -4,6 +4,21 @@
 
 int main()
 {
+    Sudoku game;
+
+    while (true)
+    {
+        game.Shuffle(17);
+        std::cout << game << '\n';
+
+        if (game.Solve()) std::cout << "solved\n";
+        std::cout << game << '\n';
+    }
+
+
+    return 0;
+
+
     std::ifstream input_file("sudoku_unsolved.csv");
     if (!input_file)
     {
@@ -39,7 +54,6 @@ int main()
         }
         else
         {
-            std::cout << game << '\n';
             std::cerr << "\aError, failed to solve\n";
             break;
         }
