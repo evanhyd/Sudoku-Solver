@@ -55,17 +55,19 @@ public:
     explicit Sudoku(int clue);
     explicit Sudoku(const std::string& new_board);
 
-    bool Solve();
+    void SetPuzzle(const std::string& puzzle_str);
     void Shuffle(int clue);
+    bool Solve();
 
 private:
     U32 GetMove(int i, int j);
     void PutNum(int i, int j, int num);
     void UndoPutNum(int i, int j);
+    void ReduceClue(int clue);
+
     bool DFS(int depth);
     bool IsSolvable();
 
-    void ReduceClue(int clue);
 
     friend std::ostream& operator<<(std::ostream& output, const Sudoku& game);
     friend std::ofstream& operator<<(std::ofstream& output, const Sudoku& game);

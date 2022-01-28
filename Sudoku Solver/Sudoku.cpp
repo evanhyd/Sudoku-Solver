@@ -26,35 +26,32 @@ Sudoku::Sudoku() : board_{}, empty_grid_(kGridSize), row_num_record_{}, column_n
 }
 Sudoku::Sudoku(int clue) : Sudoku()
 {
-    for (int i = 0; i < kGridLen; ++i)
-    {
-        for (int j = 0; j < kGridLen; ++j)
-        {
-            board_[i][j] = kCompletedPuzzle[i][j];
-            //PutNum(i, j, kCompletedPuzzle[i][j]);
-        }
-    }
-
     this->Shuffle(clue);
 }
 Sudoku::Sudoku(const std::string& new_board) : Sudoku()
 {
-    assert(new_board.size() == kGridSize);
+    SetPuzzle(new_board);
+}
 
-    auto letter = new_board.begin();
+void Sudoku::SetPuzzle(const std::string& puzzle_str)
+{
+    assert(puzzle_str.size() == kGridSize);
+
+    empty_grid_ = kGridSize;
+    std::fill(row_num_record_, row_num_record_ + kGridLen, 0);
+    std::fill(column_num_record_, column_num_record_ + kGridLen, 0);
+    std::fill(block_num_record_, block_num_record_ + kGridLen, 0);
+    
+    auto letter = puzzle_str.begin();
     for (int i = 0; i < kGridLen; ++i)
     {
         for (int j = 0; j < kGridLen; ++j)
         {
-            if(isdigit(*letter) && *letter != '0') this->PutNum(i, j, *letter - '0');
+            if ('1' <= *letter && *letter <= '9') this->PutNum(i, j, *letter - '0');
+            else board_[i][j] = 0;
             ++letter;
         }
     }
-}
-
-bool Sudoku::Solve()
-{
-    return this->DFS(0);
 }
 
 void Sudoku::Shuffle(int clue)
@@ -63,6 +60,14 @@ void Sudoku::Shuffle(int clue)
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, 2);
 
+    //reset to the original
+    for (int i = 0; i < kGridLen; ++i)
+    {
+        for (int j = 0; j < kGridLen; ++j)
+        {
+            board_[i][j] = kCompletedPuzzle[i][j];
+        }
+    }
 
     //swap rows
     for (int i = 0; i < kGridLen; ++i)
@@ -117,19 +122,26 @@ void Sudoku::Shuffle(int clue)
     }
 
     //update number counts
+    std::fill(row_num_record_, row_num_record_ + kGridLen, 0);
+    std::fill(column_num_record_, column_num_record_ + kGridLen, 0);
+    std::fill(block_num_record_, block_num_record_ + kGridLen, 0);
+    empty_grid_ = kGridSize;
+
     for (int i = 0; i < kGridLen; ++i)
     {
         for (int j = 0; j < kGridLen; ++j)
         {
-            int num = board_[i][j];
-            UndoPutNum(i, j);
-            PutNum(i, j, num);
+            PutNum(i, j, board_[i][j]);
         }
     }
 
     this->ReduceClue(clue);
 }
 
+bool Sudoku::Solve()
+{
+    return this->DFS(0);
+}
 
 
 
@@ -166,6 +178,27 @@ void Sudoku::UndoPutNum(int i, int j)
     block_num_record_[block] = FlipBit(block_num_record_[block], num);
 
     board_[i][j] = kEmptyGrid;
+}
+
+void Sudoku::ReduceClue(int clue)
+{
+    clue = std::clamp(clue, 0, kGridSize);
+
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, kGridLen - 1);
+
+    while ((kGridSize - empty_grid_) > clue)
+    {
+        int i = dist(rng);
+        int j = dist(rng);
+
+        if (board_[i][j] == kEmptyGrid) continue;
+
+        UndoPutNum(i, j);
+
+        assert(this->IsSolvable());
+    }
 }
 
 
@@ -253,29 +286,7 @@ bool Sudoku::IsSolvable()
     return false;
 }
 
-void Sudoku::ReduceClue(int clue)
-{
-    clue = std::clamp(clue, 0, kGridSize);
 
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist(0, kGridLen-1);
-
-    //kGridSize > clue + empty_grid_;
-
-    while ((kGridSize - empty_grid_) > clue)
-    {
-        int i = dist(rng);
-        int j = dist(rng);
-
-        if (board_[i][j] == kEmptyGrid) continue;
-
-        int old_num = board_[i][j];
-        UndoPutNum(i, j);
-
-        assert(this->IsSolvable());
-    }
-}
 
 
 
@@ -320,8 +331,6 @@ std::ofstream& operator<<(std::ofstream& output, const Sudoku& game)
             else output << '.';
         }
     }
-
-    output << '\n';
 
     return output;
 }
