@@ -21,3 +21,13 @@ Machine learning may be?
 generate sudoku puzzles: -g [difficulty] [puzzle numbers] [output file name]  
 solve sudoku puzzles: -s [input file name] [output file name]  
 view sudoku puzzles: -v [input file name]  
+
+Notes:  
+The sudoku puzzles are stored as CSV format, separated with a comma and a new line, examples:  
+............87.................6.8.9.....2.....1.9...........83.....4...1239..6.7,  
+............3.....5..1..643......7..7...5.......9......4...7.....25...9..78......,  
+.69.......8.........3....67....87.4.........8..8..4.....4.....98..2..1...........,  
+12..4..5...............8....9........3.5..7..............3.6...6...8.3.1......9.6,  
+.8..5.....7.8..........3..92...7..4.....4......4.........5....7.5..3...1........3,  
+  
+Above are 5 different configurations for sudoku puzzles  
