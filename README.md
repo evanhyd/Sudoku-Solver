@@ -7,7 +7,7 @@ Arrays of bit masks to represent the number appear in the row/column/block
 # Algorithm:  
 Using DFS backtrack to search for the solution  
 Greedily fill out the grid with the least move options to prune down the subtree  
-Fast move generation by utilizing bits maniplation  
+Fast move generation by using bitwise opreations to perform set intersect/unions.
   
   
 # To Do List:  
