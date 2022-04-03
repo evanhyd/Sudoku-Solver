@@ -18,7 +18,7 @@ Machine learning may be?
 
 
 # Command Arguments:
-generate sudoku puzzles: -g [difficulty] [puzzle numbers] [output file name]  
+generate sudoku puzzles: -g [prefilled grid number] [puzzle numbers] [output file name]  
 solve sudoku puzzles: -s [input file name] [output file name]  
 view sudoku puzzles: -v [input file name]  
 
