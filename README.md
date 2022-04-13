@@ -3,7 +3,8 @@
 # Data Structure:  
 2D matrix to represent the sudoku  
 Arrays of bit masks to represent the number appear in the row/column/block
-
+  
+  
 # Algorithm:  
 Using DFS backtrack to search for the solution  
 Greedily fill out the grid with the least move options to prune down the subtree  
@@ -17,10 +18,10 @@ Update the data structure to dancing list
 Machine learning may be?  
 
 
-# Command Arguments:
-generate sudoku puzzles: -g [prefilled grid number] [puzzle numbers] [output file name]  
-solve sudoku puzzles: -s [input file name] [output file name]  
-view sudoku puzzles: -v [input file name]  
+# Console Commands:
+generate sudoku puzzles: -g [number of prefilled grid] [numbers of puzzles] [puzzle file name]  
+solve    sudoku puzzles: -s [puzzle file name] [solution file name]  
+view     sudoku puzzles: -v [puzzle file name]  
 
 Notes:  
 The sudoku puzzles are stored as CSV format, separated with a comma and a new line, examples:  
